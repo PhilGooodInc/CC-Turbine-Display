@@ -1,0 +1,94 @@
+t = peripheral.find("BigReactors-Turbine")
+m = peripheral.find("monitor")
+
+local turbineLow = 1800
+local turbineHigh = 1840
+
+function coilsOn()
+   t.setInductorEngaged(true)
+end
+
+function coilsOff()
+   t.setInductorEngaged(false)
+end
+
+function autoTurbine()
+	if turbineRotorSpeed > turbineHigh then
+		coilsOn()
+		end
+	if turbineRotorSpeed < turbineLow then
+		coilsOff()
+		end
+	end
+
+function checkRPM()
+	if true then
+	turbineRotorSpeed = t.getRotorSpeed()
+	end
+	end
+
+function displayRPM()
+checkRPM()
+m.setTextScale(1)
+
+m.setTextColor(colors.white)
+	  m.setCursorPos(1,2)
+	  m.clearLine()
+      m.write("Rotor: "..comma_value(math.floor(turbineRotorSpeed)).." RPM")
+	end
+
+function checkEngaged()
+	coilsEngaged = t.getInductorEngaged()
+	
+	m.setCursorPos(1,3)
+	m.clearLine()
+	m.setTextColor(colors.white)
+	m.write("Coils: ")
+		if coilsEngaged then 
+		m.setTextColor(colors.green) 
+		m.write("Engaged")
+		else 
+		m.setTextColor(colors.red) 
+		m.write("Disengaged")
+	end
+	end
+	
+function displayEnergy()
+turbineRFGen = t.getEnergyProducedLastTick()
+
+m.setTextColor(colors.white)
+	  m.setCursorPos(1,4)
+	  m.clearLine()
+	  m.write("RFGen: ")
+	  m.setTextColor(colors.green)
+      m.write(comma_value(math.floor(turbineRFGen)).."RF/t") 
+	  end
+	
+function comma_value(amount)
+   local formatted = amount
+   local swap = false
+   if formatted < 0 then 
+      formatted = formatted*-1
+      swap = true
+   end
+   while true do
+      formatted, k = string.gsub(formatted, "^(%d+)(%d%d%d)", '%1,%2')
+      if k == 0 then
+         break
+      end
+   end
+   if swap then 
+     formatted = "-"..formatted
+   end
+   return formatted
+end
+
+
+while true do 
+	displayRPM()
+	checkRPM()
+	checkEngaged()
+	displayEnergy()
+	autoTurbine()
+	sleep()
+	end
